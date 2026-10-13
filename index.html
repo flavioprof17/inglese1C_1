@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leo & the International Club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#1a1a1a; --paper:#fffdf6; --yellow:#ffe066; --red:#ff5a5f; --green:#2ecc71;
+  --blue:#4dabf7; --orange:#ffa94d; --bg:#ffd43b; --muted:#555;
+  --ok-bg:#d3f9d8; --bad-bg:#ffe3e3; --case-bg:#fff3bf;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; color:var(--ink); font-family:"Comic Neue","Comic Sans MS",cursive,sans-serif; font-size:18px;
+  background-color:var(--bg);
+  background-image:radial-gradient(rgba(0,0,0,.13) 1.6px,transparent 1.7px);
+  background-size:14px 14px;
+}
+h1,h2,h3,.bang{font-family:"Bangers","Comic Sans MS",cursive;letter-spacing:1.5px;font-weight:400}
+.wrap{max-width:1000px;margin:0 auto;padding:16px}
+header.top{text-align:center;padding:10px 0 4px}
+header.top h1{font-size:clamp(34px,7vw,58px);margin:0;color:#fff;-webkit-text-stroke:2px var(--ink);text-shadow:4px 4px 0 var(--ink);transform:rotate(-2deg)}
+header.top p{margin:6px 0 0;font-weight:700}
+
+nav.pages{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0}
+nav.pages button{font-family:"Bangers",cursive;font-size:20px;letter-spacing:1px;border:3px solid var(--ink);background:#fff;border-radius:10px;padding:6px 12px;cursor:pointer;box-shadow:3px 3px 0 var(--ink);min-width:48px}
+nav.pages button.active{background:var(--red);color:#fff}
+nav.pages button .st{font-size:13px;display:block;line-height:1;color:#e67700}
+nav.pages button.active .st{color:#fff}
+
+.page{display:none}
+.page.active{display:block;animation:pop .3s ease}
+@keyframes pop{from{transform:scale(.97);opacity:0}to{transform:none;opacity:1}}
+
+.chapter-title{background:var(--ink);color:#fff;display:inline-block;padding:6px 16px;font-size:30px;transform:rotate(-1deg);border-radius:4px;margin:6px 0 10px}
+.chapter-title small{font-family:"Comic Neue",sans-serif;font-size:16px;letter-spacing:0;color:var(--yellow);margin-left:8px}
+
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:16px}
+.panel{background:var(--paper);border:3px solid var(--ink);box-shadow:6px 6px 0 var(--ink);border-radius:4px;padding:12px;position:relative}
+.panel.wide{grid-column:1/-1}
+.panel .num{position:absolute;top:-12px;left:-12px;background:var(--yellow);border:3px solid var(--ink);border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-family:"Bangers",cursive;font-size:20px}
+.panel.ok{background:var(--ok-bg)}
+.panel.bad{background:var(--bad-bg)}
+
+.caption{background:var(--yellow);border:3px solid var(--ink);padding:10px 14px;font-weight:700;box-shadow:4px 4px 0 var(--ink);margin:0 0 16px;line-height:1.4}
+.caption b.en{font-family:"Bangers",cursive;letter-spacing:1px;font-weight:400;font-size:20px}
+
+.scene{display:flex;align-items:flex-end;gap:10px}
+.scene .who{flex:0 0 auto;text-align:center;width:84px}
+.scene .who svg{width:84px;height:92px;display:block}
+.scene .who .name{font-family:"Bangers",cursive;font-size:16px;letter-spacing:1px}
+.bubble{position:relative;background:#fff;border:3px solid var(--ink);border-radius:22px;padding:12px 14px;flex:1;line-height:1.9;font-size:19px;margin-bottom:26px}
+.bubble::before{content:"";position:absolute;left:-17px;bottom:14px;border:9px solid transparent;border-right:16px solid var(--ink)}
+.bubble::after{content:"";position:absolute;left:-10px;bottom:17px;border:6px solid transparent;border-right:11px solid #fff}
+
+input.fill{font:inherit;font-weight:700;border:none;border-bottom:3px dashed var(--ink);background:#fff9db;padding:0 6px;border-radius:4px 4px 0 0;min-width:70px;color:#1864ab;outline:none}
+input.fill:focus{background:#e7f5ff;border-bottom-style:solid}
+input.fill.ok,input.wr.ok{background:var(--ok-bg);border-color:#2b8a3e;color:#2b8a3e}
+input.fill.bad,input.wr.bad{background:var(--bad-bg);border-color:#c92a2a;color:#c92a2a}
+input.fill.case,input.wr.case{background:var(--case-bg);border-color:#e67700}
+
+.opts{display:inline-flex;flex-wrap:wrap;gap:4px;vertical-align:middle;margin:0 2px}
+.opts button{font:inherit;font-weight:700;font-size:16px;border:2px solid var(--ink);background:#fff;border-radius:8px;padding:1px 9px;cursor:pointer;line-height:1.5}
+.opts button:hover{background:#e7f5ff}
+.opts button.sel{background:var(--blue);color:#fff}
+.opts.ok button.sel{background:var(--green);color:#fff}
+.opts.bad button.sel{background:var(--red);color:#fff}
+.opts.reveal button.right{outline:3px solid var(--green);outline-offset:1px}
+
+.fb{font-size:15px;margin-top:6px;font-weight:700;color:#c92a2a;min-height:0}
+.fb.good{color:#2b8a3e}
+.fb:empty{display:none}
+
+/* ordina parole */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}
+.chip{font:inherit;font-weight:700;border:3px solid var(--ink);background:var(--orange);border-radius:10px;padding:4px 12px;cursor:pointer;box-shadow:2px 2px 0 var(--ink)}
+.chip:active{transform:translate(2px,2px);box-shadow:none}
+.answer-line{min-height:50px;border:3px dashed #999;border-radius:12px;padding:6px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;background:#fff}
+.answer-line .chip{background:#a5d8ff}
+.answer-line.ok{border-color:#2b8a3e;background:var(--ok-bg)}
+.answer-line.bad{border-color:#c92a2a;background:var(--bad-bg)}
+.answer-line:empty::before{content:"Clicca le parole nell'ordine giusto…";color:#999;font-size:15px}
+.mini{font:inherit;font-size:14px;border:2px solid var(--ink);background:#fff;border-radius:8px;padding:2px 8px;cursor:pointer;margin-top:6px}
+
+/* quaderno */
+.note{background:#fff;background-image:repeating-linear-gradient(transparent 0 33px,#a5d8ff 33px 35px);padding:10px 14px 14px}
+.prompt{display:inline-block;background:var(--ink);color:#fff;padding:3px 10px;border-radius:6px;font-weight:700;margin-bottom:8px}
+.badge{display:inline-block;font-size:13px;border:2px solid var(--ink);border-radius:20px;padding:0 8px;margin-left:6px;background:#fff;color:var(--ink);font-weight:700}
+input.wr{font:inherit;width:100%;border:none;border-bottom:3px solid var(--ink);background:transparent;padding:4px 2px;margin:4px 0;outline:none;font-weight:700;color:#1864ab}
+.lbl{font-size:14px;color:var(--muted);font-weight:700}
+
+/* scheda profilo */
+.card{border:3px solid var(--ink);border-radius:10px;overflow:hidden;background:#fff;max-width:520px}
+.card table{width:100%;border-collapse:collapse}
+.card td{border-bottom:2px solid #ddd;padding:6px 12px}
+.card td:first-child{font-weight:700;background:#e7f5ff;width:42%}
+.card .head{background:var(--blue);color:#fff;font-family:"Bangers",cursive;letter-spacing:1px;font-size:22px;padding:6px 12px;display:flex;align-items:center;gap:10px}
+.card .head svg{width:46px;height:50px;background:#fff;border-radius:50%;border:2px solid var(--ink)}
+.profile-wrap{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start}
+textarea{font:inherit;width:100%;min-height:150px;border:3px solid var(--ink);border-radius:10px;padding:10px;background:#fff;background-image:repeating-linear-gradient(transparent 0 30px,#e9ecef 30px 31px);line-height:31px}
+.checklist{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.checklist span{border:2px solid var(--ink);border-radius:20px;padding:1px 10px;font-size:14px;font-weight:700;background:#fff}
+.checklist span.yes{background:var(--ok-bg)}
+.model{display:none;margin-top:10px;background:#e7f5ff;border:2px dashed #1864ab;border-radius:10px;padding:10px}
+
+/* lettera */
+.letter{background:#fff;border:3px solid var(--ink);padding:18px 20px;line-height:2.3;font-size:19px;box-shadow:6px 6px 0 var(--ink);transform:rotate(-.4deg);background-image:linear-gradient(90deg,transparent 40px,#ffc9c9 40px 42px,transparent 42px)}
+.letter p{margin:0 0 8px 34px}
+
+/* ripasso */
+details.tip{background:#fff;border:3px solid var(--ink);border-radius:10px;margin:0 0 16px;box-shadow:3px 3px 0 var(--ink)}
+details.tip summary{cursor:pointer;padding:8px 12px;font-family:"Bangers",cursive;letter-spacing:1px;font-size:20px}
+details.tip .in{padding:0 14px 12px;line-height:1.5}
+details.tip table{border-collapse:collapse;margin:6px 0}
+details.tip td,details.tip th{border:2px solid var(--ink);padding:3px 10px;text-align:left}
+details.tip th{background:var(--yellow)}
+
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:20px 0 6px}
+.btn{font-family:"Bangers",cursive;letter-spacing:1px;font-size:22px;border:3px solid var(--ink);border-radius:12px;padding:8px 18px;cursor:pointer;box-shadow:4px 4px 0 var(--ink);background:#fff}
+.btn:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
+.btn.go{background:var(--green);color:#fff;-webkit-text-stroke:.5px var(--ink)}
+.btn.next{background:var(--blue);color:#fff}
+.btn.sol{background:#fff3bf}
+.btn[hidden]{display:none}
+.result{font-weight:700;font-size:18px;background:#fff;border:3px solid var(--ink);border-radius:12px;padding:8px 14px;display:none}
+.result.show{display:block}
+.pow{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%) rotate(-8deg) scale(0);font-family:"Bangers",cursive;font-size:clamp(50px,12vw,110px);color:var(--yellow);-webkit-text-stroke:3px var(--ink);text-shadow:6px 6px 0 var(--red);pointer-events:none;z-index:99;transition:transform .25s cubic-bezier(.3,1.8,.5,1)}
+.pow.on{transform:translate(-50%,-50%) rotate(-8deg) scale(1)}
+
+/* start & finale */
+.cast{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;margin:10px 0}
+.cast svg{width:70px;height:78px}
+.start-box{text-align:center}
+.start-box input{font:inherit;font-size:22px;border:3px solid var(--ink);border-radius:10px;padding:6px 12px;width:min(360px,100%);text-align:center}
+.mission{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;text-align:left;margin:14px 0}
+.mission div{background:#fff;border:2px solid var(--ink);border-radius:10px;padding:8px 10px;font-size:16px}
+.mission b{font-family:"Bangers",cursive;font-weight:400;letter-spacing:1px;font-size:19px;color:#c92a2a}
+.score-row{display:flex;align-items:center;gap:10px;margin:6px 0;font-weight:700}
+.score-row .lab{width:210px;flex:0 0 auto}
+.score-row .track{flex:1;height:22px;border:3px solid var(--ink);border-radius:12px;background:#fff;overflow:hidden}
+.score-row .fill-bar{height:100%;background:var(--green)}
+.score-row .val{width:64px;text-align:right}
+.big-stars{font-size:54px;text-align:center;letter-spacing:6px}
+@media (max-width:560px){
+  body{font-size:17px}
+  .wrap{padding:12px}
+  .panel{padding:10px}
+  .scene{gap:6px}
+  .scene .who{width:50px}.scene .who svg{width:50px;height:55px}.scene .who .name{font-size:13px}
+  .bubble{font-size:17px;padding:10px 10px;border-radius:18px}
+  .chapter-title{font-size:24px}
+  .btn{font-size:19px;padding:8px 14px}
+  .bar .btn{flex:1 1 100%}
+  .score-row .lab{width:120px;font-size:14px}
+  .letter{padding:14px 10px;background-image:linear-gradient(90deg,transparent 18px,#ffc9c9 18px 20px,transparent 20px)}.letter p{margin-left:18px}
+}
+@media (pointer:coarse){
+  .opts{gap:6px}
+  .opts button{min-height:38px;padding:3px 13px}
+  .chip{min-height:42px}
+  .mini{min-height:34px;padding:4px 12px}
+}
+@media print{
+  nav.pages,.bar,header.top p{display:none}
+  body{background:#fff}
+  .page{display:none!important}
+  #page-final{display:block!important}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Leo &amp; the International Club</h1>
+    <p>Un fumetto da completare in inglese ✏️ Classe prima</p>
+  </header>
+  <nav class="pages" id="nav"></nav>
+  <main id="pages"></main>
+</div>
+<div class="pow" id="pow">WOW!</div>
+
+<script>
+/* ============ PERSONAGGI ============ */
+const C = {
+  leo:   {name:'Leo',       skin:'#f1c27d', hair:'#5a3214', shirt:'#2e86de', style:'spiky'},
+  parker:{name:'Ms Parker', skin:'#f6d5b8', hair:'#c0392b', shirt:'#8e44ad', style:'bun', glasses:true},
+  mei:   {name:'Mei',       skin:'#f3d3a8', hair:'#151515', shirt:'#e84393', style:'long'},
+  kenji: {name:'Kenji',     skin:'#efd0a6', hair:'#1b1b1b', shirt:'#00b894', style:'short', glasses:true},
+  ana:   {name:'Ana',       skin:'#c68642', hair:'#2d1606', shirt:'#fdcb6e', style:'curlylong'},
+  aiden: {name:'Aiden',     skin:'#fde0c8', hair:'#e1a95f', shirt:'#d63031', style:'short'},
+  olivia:{name:'Olivia',    skin:'#fde7d6', hair:'#d35400', shirt:'#0984e3', style:'long'},
+  raj:   {name:'Raj',       skin:'#a86b3c', hair:'#111',    shirt:'#f39c12', style:'short'},
+  lena:  {name:'Lena',      skin:'#fbe3cf', hair:'#f5d76e', shirt:'#6c5ce7', style:'bob'},
+  tiago: {name:'Tiago',     skin:'#d9a066', hair:'#3b2412', shirt:'#27ae60', style:'curly'},
+  chloe: {name:'Chloe',     skin:'#f7d9c4', hair:'#7b4a2a', shirt:'#e17055', style:'bun'},
+  nikos: {name:'Nikos',     skin:'#e0ac69', hair:'#222',    shirt:'#0abde3', style:'spiky'},
+  sam:   {name:'Sam',       skin:'#8d5524', hair:'#1a0f08', shirt:'#636e72', style:'curly'},
+  zoe:   {name:'Zoe',       skin:'#f5d0b0', hair:'#3d2314', shirt:'#20c997', style:'long'}
+};
+function face(k){
+  const c = C[k], S = 'stroke="#1a1a1a" stroke-width="3" stroke-linejoin="round"';
+  let back = '', front = '';
+  switch(c.style){
+    case 'long': back = `<path d="M23 50 Q20 14 50 14 Q80 14 77 50 L80 90 L20 90Z" fill="${c.hair}" ${S}/>`;
+                 front = `<path d="M24 46 Q22 18 50 18 Q78 18 76 46 Q70 30 54 29 Q38 32 24 46Z" fill="${c.hair}" ${S}/>`; break;
+    case 'curlylong': back = `<path d="M20 52 Q14 12 50 12 Q86 12 80 52 Q88 72 78 90 L22 90 Q12 72 20 52Z" fill="${c.hair}" ${S}/>`;
+                 front = `<path d="M24 46 Q22 18 50 18 Q78 18 76 46 Q66 30 50 32 Q34 30 24 46Z" fill="${c.hair}" ${S}/>`; break;
+    case 'bob':  back = `<path d="M22 50 Q20 14 50 14 Q80 14 78 50 L78 70 L22 70Z" fill="${c.hair}" ${S}/>`;
+                 front = `<path d="M24 44 L24 30 Q30 18 50 18 Q70 18 76 30 L76 44 Q74 34 50 34 Q26 34 24 44Z" fill="${c.hair}" ${S}/>`; break;
+    case 'bun':  back = `<circle cx="50" cy="16" r="11" fill="${c.hair}" ${S}/>`;
+                 front = `<path d="M24 46 Q22 20 50 20 Q78 20 76 46 Q68 30 50 30 Q32 30 24 46Z" fill="${c.hair}" ${S}/>`; break;
+    case 'spiky': front = `<path d="M24 44 L25 26 L33 31 L37 16 L45 27 L51 12 L57 27 L65 16 L68 31 L76 26 L76 44 Q62 31 24 44Z" fill="${c.hair}" ${S}/>`; break;
+    case 'curly': front = [[28,34],[36,24],[47,20],[58,21],[67,26],[73,36]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="9" fill="${c.hair}" ${S}/>`).join(''); break;
+    default:     front = `<path d="M24 44 Q24 18 50 18 Q76 18 76 44 Q66 30 50 30 Q34 30 24 44Z" fill="${c.hair}" ${S}/>`;
+  }
+  const glasses = c.glasses ? `<circle cx="41" cy="50" r="6.5" fill="none" ${S}/><circle cx="59" cy="50" r="6.5" fill="none" ${S}/><line x1="47.5" y1="50" x2="52.5" y2="50" ${S}/>` : '';
+  return `<svg viewBox="0 0 100 110" aria-hidden="true">
+    ${back}
+    <path d="M16 110 Q18 78 50 76 Q82 78 84 110Z" fill="${c.shirt}" ${S}/>
+    <rect x="44" y="68" width="12" height="10" fill="${c.skin}" ${S}/>
+    <circle cx="50" cy="48" r="26" fill="${c.skin}" ${S}/>
+    ${front}
+    <circle cx="41" cy="50" r="3.2" fill="#1a1a1a"/><circle cx="59" cy="50" r="3.2" fill="#1a1a1a"/>
+    <circle cx="35" cy="58" r="4" fill="#ff8787" opacity=".45"/><circle cx="65" cy="58" r="4" fill="#ff8787" opacity=".45"/>
+    <path d="M42 60 Q50 67 58 60" fill="none" stroke="#1a1a1a" stroke-width="3" stroke-linecap="round"/>
+    ${glasses}
+  </svg>`;
+}
+
+/* ============ CONTENUTI ============ */
+const P = (ans, cap) => {
+  const list = ['my','your','his','her','its','our','their'];
+  return '[[' + list.map(w => (cap ? w[0].toUpperCase()+w.slice(1) : w) + (w===ans?'*':'')).join('|') + ']]';
+};
+
+const CH = [
+{
+  id:'c1', title:'Welcome to the club!', skill:'Paesi e nazionalità',
+  intro:[['parker','Welcome to Hilltop School, Leo! This is the International Club.'],
+         ['leo','Hi everyone! I\'m Leo. I\'m from Italy. I\'m Italian.'],
+         ['mei','Hi Leo! Nice to meet you! We\'re from all over the world!']],
+  caption:'Leo è appena arrivato in una scuola internazionale di Londra. Tutti si presentano! Completa i fumetti con il <b>PAESE</b> (country) o la <b>NAZIONALITÀ</b> (nationality). Attenzione: in inglese vogliono sempre la lettera <b>MAIUSCOLA</b>!',
+  tip:`<table><tr><th>Country</th><th>Nationality</th></tr>
+       <tr><td>Italy</td><td>Italian</td></tr><tr><td>Brazil</td><td>Brazilian</td></tr>
+       <tr><td>Japan</td><td>Japanese</td></tr><tr><td>Spain</td><td>Spanish</td></tr>
+       <tr><td>France</td><td>French</td></tr><tr><td>the USA</td><td>American</td></tr></table>
+       Molte nazionalità finiscono in <b>-an / -ian</b>, <b>-ese</b>, <b>-ish</b>.<br>
+       Il <b>Regno Unito</b> (the UK → British) è formato da: England → English, Scotland → Scottish, Wales → Welsh, Northern Ireland → Northern Irish.`,
+  wordbank:true,
+  type:'panels',
+  items:[
+    ['lena',  'I\'m from Germany. I\'m {{German}}.'],
+    ['olivia','I\'m from {{Scotland}}. I\'m Scottish.'],
+    ['ana',   'I\'m from Mexico. I\'m {{Mexican}}.'],
+    ['raj',   'I\'m from India. I\'m {{Indian}}.'],
+    ['aiden', 'I\'m from Wales. I\'m {{Welsh}}.'],
+    ['parker','I\'m from {{England}}. I\'m English.'],
+    ['tiago', 'I\'m from Portugal. I\'m {{Portuguese}}.'],
+    ['mei',   'I\'m from {{China}}. I\'m Chinese.'],
+    ['chloe', 'I\'m from {{Canada}}. I\'m Canadian.'],
+    ['nikos', 'I\'m from Greece. I\'m {{Greek}}.'],
+    ['kenji', 'I\'m from {{Japan}}. I\'m Japanese.'],
+    ['sam',   'I\'m from the UK. I\'m {{British}}.']
+  ]
+},
+{
+  id:'c2', title:'In the classroom', skill:'Verbo TO BE (affermativo e negativo)',
+  intro:[['parker','OK, class! Talk about your families and friends, please.'],
+         ['leo','I\'m ready! I\'m not shy!']],
+  caption:'In classe tutti parlano… ma manca il verbo! Clicca la forma corretta del verbo <b class="en">TO BE</b>.',
+  tip:`<table><tr><th>Affermativo</th><th>Negativo</th></tr>
+       <tr><td>I am (I'm)</td><td>I am not (I'm not)</td></tr>
+       <tr><td>You are (you're)</td><td>You are not (you aren't)</td></tr>
+       <tr><td>He / She / It is ('s)</td><td>He / She / It is not (isn't)</td></tr>
+       <tr><td>We / You / They are ('re)</td><td>We / You / They are not (aren't)</td></tr></table>
+       Trucco: <i>my mum</i> = she → <b>is</b>; <i>Ana and I</i> = we → <b>are</b>; <i>my dogs</i> = they → <b>are</b>.`,
+  type:'panels',
+  items:[
+    ['ana',   'My mum [[am|is*|are]] a doctor.', 'My mum = she → is'],
+    ['leo',   'Mei and I [[am|is|are*]] in the same class.', 'Mei and I = we → are'],
+    ['lena',  'I [[am*|is|are]] German.', 'I → am'],
+    ['raj',   'Kenji [[am not|isn\'t*|aren\'t]] from Korea. He\'s Japanese!', 'Kenji = he → isn\'t'],
+    ['parker','You [[am not|isn\'t|aren\'t*]] late, Leo. Come in!', 'You → aren\'t'],
+    ['tiago', 'This lesson [[am not|isn\'t*|aren\'t]] boring!', 'This lesson = it → isn\'t'],
+    ['chloe', 'Ana and Tiago [[am|is|are*]] my friends.', 'Ana and Tiago = they → are'],
+    ['nikos', 'I [[am not*|isn\'t|aren\'t]] tired.', 'I → am not (I\'m not)'],
+    ['aiden', 'My dogs [[am not|isn\'t|aren\'t*]] noisy.', 'My dogs = they → aren\'t'],
+    ['kenji', 'It [[am|is*|are]] Monday today.', 'It → is']
+  ]
+},
+{
+  id:'c3', title:'Kenji\'s quiz', skill:'Domande con TO BE (ordine delle parole)',
+  intro:[['kenji','Leo, it\'s quiz time! Are you ready?'],
+         ['leo','Yes, I am! But… Kenji, your questions are in a mess!']],
+  caption:'Oh no! Le domande del quiz di Kenji sono tutte in disordine. Clicca le parole nell\'ordine giusto per scrivere le <b>DOMANDE</b>. Se sbagli, clicca una parola per toglierla.',
+  tip:`Nelle domande il verbo <b>to be</b> va <b>PRIMA</b> del soggetto:<br>
+       <i>The film <b>is</b> funny.</i> → <b><i>Is</i></b> <i>the film funny?</i><br>
+       <i>You <b>are</b> twelve.</i> → <b><i>Are</i></b> <i>you twelve?</i>`,
+  type:'order',
+  items:[
+    ['kenji', ['big','the gym','is','?'], ['is / the gym / big / ?']],
+    ['kenji', ['funny','is','the film','?'], ['is / the film / funny / ?']],
+    ['kenji', ['Mei','Chinese','and','are','Kenji','?'], ['are / mei / and / kenji / chinese / ?','are / kenji / and / mei / chinese / ?']],
+    ['kenji', ['at work','your parents','are','?'], ['are / your parents / at work / ?']],
+    ['kenji', ['your','English','favourite subject','is','?'], ['is / english / your / favourite subject / ?']],
+    ['kenji', ['twelve','are','you','?'], ['are / you / twelve / ?']]
+  ]
+},
+{
+  id:'c4', title:'Leo\'s notebook', skill:'Frasi affermative, negative, domande e short answers',
+  intro:[['leo','This is my notebook. I write about my new friends.'],
+         ['ana','Is my name in it?'],
+         ['leo','Yes, it is!']],
+  caption:'Aiuta Leo a scrivere nel suo quaderno. Scrivi frasi <b>affermative ✅</b>, <b>negative ❌</b> o <b>domande ❓</b> con la forma corretta di <b class="en">TO BE</b>. Dove c\'è scritto Yes / No, aggiungi la <b>risposta breve</b> (short answer).',
+  tip:`✅ <i>Ana <b>is</b> in the library.</i><br>❌ <i>Ana <b>isn't</b> in the library.</i><br>❓ <i><b>Is</b> Ana in the library?</i><br><br>
+       <b>Short answers</b>: <i>Yes, she is. / No, she isn't. — Yes, they are. / No, they aren't.</i><br>
+       ⚠️ Nella risposta breve affermativa <b>non</b> si usa la forma contratta: <i>Yes, it is</i> ✔️ — <i>Yes, it's</i> ✖️`,
+  type:'write',
+  items:[
+    {p:'Ana / in the library', k:'+', a:['Ana is in the library']},
+    {p:'We / very hungry', k:'+', a:['We are very hungry']},
+    {p:'Mr Brown / not / our maths teacher', k:'-', a:['Mr Brown is not our maths teacher']},
+    {p:'Kenji and Mei / not / Spanish', k:'-', a:['Kenji and Mei are not Spanish']},
+    {p:'your dog / small ?', k:'?', ans:'Yes', a:['Is your dog small'], s:['Yes it is','Yes he is','Yes she is']},
+    {p:'maths / easy ?', k:'?', ans:'No', a:['Is maths easy'], s:['No it is not']},
+    {p:'the twins / at the park ?', k:'?', ans:'No', a:['Are the twins at the park'], s:['No they are not']}
+  ]
+},
+{
+  id:'c5', title:'Lost property!', skill:'Aggettivi possessivi',
+  intro:[['parker','Look! This is the lost property box. Whose things are these?'],
+         ['raj','Is that my cap?'],
+         ['leo','No, it isn\'t. It\'s Nikos\'s cap!']],
+  caption:'Tutti cercano le loro cose! Scegli l\'<b>aggettivo possessivo</b> giusto. Guarda il pronome tra parentesi: ti dice <b>di chi</b> è la cosa.',
+  tip:`<table><tr><th>Pronome</th><th>Possessivo</th></tr>
+       <tr><td>I</td><td>my</td></tr><tr><td>you</td><td>your</td></tr><tr><td>he</td><td>his</td></tr>
+       <tr><td>she</td><td>her</td></tr><tr><td>it</td><td>its</td></tr><tr><td>we</td><td>our</td></tr>
+       <tr><td>they</td><td>their</td></tr></table>
+       ⚠️ <b>its</b> (suo, di una cosa/animale) ≠ <b>it's</b> (it is)! &nbsp; <b>their</b> ≠ <b>they're</b> (they are)!`,
+  type:'panels',
+  items:[
+    ['parker',`The teachers are in ${P('their')} staff room. <b>(THEY)</b>`, 'they → their'],
+    ['leo',   `Raj is with ${P('his')} grandma. <b>(HE)</b>`, 'he → his'],
+    ['ana',   `Is ${P('your')} dad Mexican? <b>(YOU)</b>`, 'you → your'],
+    ['kenji', `${P('our',true)} science teacher is very nice. <b>(WE)</b>`, 'we → our'],
+    ['olivia',`The cat is black and ${P('its')} eyes are green. <b>(IT)</b>`, 'it → its (senza apostrofo!)'],
+    ['mei',   `Lena is German and ${P('her')} mum is Austrian. <b>(SHE)</b>`, 'she → her'],
+    ['leo',   `I'm Leo. ${P('my',true)} favourite sport is football. <b>(I)</b>`, 'I → my'],
+    ['chloe', `They're Amy and Kate. ${P('their',true)} favourite colour is pink. <b>(THEY)</b>`, 'they → their']
+  ]
+},
+{
+  id:'c6', title:'The school magazine', skill:'Scrivere un breve paragrafo da una scheda',
+  intro:[['aiden','Hi! I\'m Aiden. I\'m in the school magazine this week!'],
+         ['leo','Cool! Let\'s write about you, Aiden!']],
+  caption:'Leo scrive un articolo per il giornalino della scuola. <b>Parte A:</b> leggi la scheda di Aiden e completa il paragrafo. <b>Parte B:</b> ora scrivi TU il paragrafo su Zoe!',
+  tip:`Per un <b>ragazzo</b>: <i><b>He</b> is… / <b>His</b> name is… / <b>His</b> favourite…</i><br>
+       Per una <b>ragazza</b>: <i><b>She</b> is… / <b>Her</b> name is… / <b>Her</b> favourite…</i><br>
+       Frasi utili: <i>He's 13 years old. — She's from Toronto, in Canada. — She's Canadian.</i>`,
+  type:'profile',
+  card:{who:'aiden', rows:[['Name','Aiden'],['Age','13'],['From','Cardiff, Wales'],['School','Riverside Music School'],['Favourite film','Spider-Man'],['Favourite actor','Tom Holland']]},
+  text:'{{His}} name {{is}} Aiden. {{He}} is 13 years old. He\'s from {{Cardiff}}, in {{Wales}}. He\'s {{Welsh}}. {{His}} school is Riverside Music School. His favourite film {{is}} Spider-Man and {{his}} favourite actor is {{Tom Holland}}.',
+  free:{who:'zoe', rows:[['Name','Zoe'],['Age','12'],['From','Toronto, Canada'],['School','Lakeside Academy'],['Favourite singer','Taylor Swift'],['Favourite sport','volleyball']],
+        model:'Her name is Zoe. She is 12 years old. She\'s from Toronto, in Canada. She\'s Canadian. Her school is Lakeside Academy. Her favourite singer is Taylor Swift and her favourite sport is volleyball.',
+        checks:[['Zoe',/\bzoe\b/i],['12',/\b12\b|twelve/i],['Toronto',/toronto/i],['Canadian',/\bCanadian\b/],['She',/\bshe\b/i],['Her',/\bher\b/i],['is',/\bis\b|'s\b/i],['Lakeside Academy',/lakeside/i],['Taylor Swift',/taylor swift/i],['volleyball',/volleyball/i]]}
+},
+{
+  id:'c7', title:'A letter from Scotland', skill:'Leggere e scegliere (to be, possessivi, contrazioni)',
+  intro:[['leo','A letter for me! It\'s from Olivia, my penfriend in Scotland!'],
+         ['mei','But the printer is broken! There are two words everywhere!']],
+  caption:'La stampante ha fatto un pasticcio! Leggi la lettera di Olivia e clicca l\'alternativa corretta.',
+  tip:`<b>it's</b> = it is &nbsp;|&nbsp; <b>its</b> = suo (di cosa/animale)<br>
+       <b>they're</b> = they are &nbsp;|&nbsp; <b>their</b> = loro<br>
+       <b>he's</b> = he is &nbsp;|&nbsp; <b>his</b> = suo (di lui)<br>
+       <b>you're</b> = you are &nbsp;|&nbsp; <b>your</b> = tuo`,
+  type:'letter',
+  text:[
+    'Hi Leo,',
+    '[[My*|I]] name is Olivia. I\'m 11 years old and I [[am*|is|are]] from Edinburgh. Edinburgh [[it\'s|is*]] a beautiful city. It\'s the capital of Scotland.',
+    'The girls in the photo [[is|are*]] my sisters. [[Their*|Our]] names are Amy and Kate. They [[aren\'t*|isn\'t]] at my school because [[they\'re*|their]] only five and eight years old. [[Their*|They\'re]] school is called St Mary\'s and my school is Castle Hill School.',
+    'This is my mum. [[She\'s*|Her]] a vet and my dad\'s a cook.',
+    'My school is great and my favourite subjects [[is|are*]] music and PE. [[I aren\'t|I\'m not*]] good at French, but I\'m very good at English. My PE teacher [[his|is*]] really funny.',
+    'What about you? [[Are*|Is]] you good at music? Who\'s [[your*|you\'re]] favourite teacher?',
+    'Write soon,<br>Olivia'
+  ]
+}
+];
+
+/* ============ STATO ============ */
+const STATE = {name:'', ch:{}};
+CH.forEach(c => STATE.ch[c.id] = {checked:false, score:0, max:0, slots:[]});
+
+/* ============ UTILITÀ ============ */
+const $ = (s, r=document) => r.querySelector(s);
+const el = (tag, cls, html) => { const e = document.createElement(tag); if(cls) e.className = cls; if(html!=null) e.innerHTML = html; return e; };
+const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];} return a; };
+const clean = s => s.replace(/[’‘`´]/g,"'").replace(/\s+/g,' ').trim();
+function norm(s){
+  s = clean(s).toLowerCase();
+  s = s.replace(/\bisn't\b/g,'is not').replace(/\baren't\b/g,'are not')
+       .replace(/'m\b/g,' am').replace(/'re\b/g,' are').replace(/'s\b/g,' is');
+  return s.replace(/[^a-z0-9 ]/g,' ').replace(/\s+/g,' ').trim();
+}
+function pow(word){
+  const p = $('#pow'); p.textContent = word; p.classList.add('on');
+  setTimeout(()=>p.classList.remove('on'), 900);
+}
+function scene(who, inner){
+  const s = el('div','scene');
+  s.appendChild(el('div','who', face(who) + `<div class="name">${C[who].name}</div>`));
+  const b = el('div','bubble'); if(typeof inner === 'string') b.innerHTML = inner; else b.appendChild(inner);
+  s.appendChild(b);
+  return {s, b};
+}
+
+/* Trasforma un testo con {{risposta}} e [[a|b*|c]] in elementi interattivi.
+   Restituisce il frammento e aggiunge gli "slot" all'array passato. */
+function build(text, slots){
+  const frag = document.createDocumentFragment();
+  const parts = text.split(/(\{\{.*?\}\}|\[\[.*?\]\])/);
+  parts.forEach(part => {
+    if(part.startsWith('{{')){
+      const alts = part.slice(2,-2).split('|');
+      const inp = el('input','fill'); inp.type = 'text'; inp.autocomplete = 'off'; inp.spellcheck = false;
+      inp.setAttribute('autocapitalize','off');
+      inp.style.width = (Math.max(...alts.map(a=>a.length)) + 3) + 'ch';
+      frag.appendChild(inp);
+      slots.push({
+        check(){
+          const v = clean(inp.value).replace(/\.$/,'');
+          if(alts.includes(v)) return true;
+          if(v && alts.some(a => a.toLowerCase() === v.toLowerCase())) return 'case';
+          return false;
+        },
+        mark(r){ inp.classList.remove('ok','bad','case'); inp.classList.add(r===true?'ok':r==='case'?'case':'bad'); },
+        reveal(){ inp.value = alts[0]; this.mark(true); },
+        node: inp
+      });
+    } else if(part.startsWith('[[')){
+      const opts = part.slice(2,-2).split('|');
+      const box = el('span','opts');
+      let sel = -1, right = -1;
+      opts.forEach((o,i) => {
+        const isRight = o.endsWith('*'); if(isRight) right = i;
+        const b = el('button', isRight ? 'right' : '', isRight ? o.slice(0,-1) : o);
+        b.type = 'button';
+        b.onclick = () => { sel = i; box.querySelectorAll('button').forEach((x,j)=>x.classList.toggle('sel', j===i)); box.classList.remove('ok','bad'); };
+        box.appendChild(b);
+      });
+      frag.appendChild(box);
+      slots.push({
+        check(){ return sel === right; },
+        mark(r){ box.classList.remove('ok','bad'); box.classList.add(r===true?'ok':'bad'); },
+        reveal(){ box.querySelectorAll('button')[right].click(); box.classList.add('reveal'); this.mark(true); },
+        node: box
+      });
+    } else if(part){
+      const span = el('span'); span.innerHTML = part; frag.appendChild(span);
+    }
+  });
+  return frag;
+}
+
+/* Collega gli slot di un pannello al suo box di feedback */
+function panelGroup(panel, fb, slots, tip){
+  return {panel, fb, slots, tip};
+}
+
+/* ============ RENDER CAPITOLI ============ */
+function renderChapter(ch, idx){
+  const st = STATE.ch[ch.id];
+  const page = el('section','page'); page.id = 'page-'+ch.id;
+  page.appendChild(el('div','chapter-title bang', `Page ${idx+1}: ${ch.title}<small>${ch.skill}</small>`));
+
+  // striscia introduttiva
+  const strip = el('div','strip');
+  ch.intro.forEach(([w,t]) => { const p = el('div','panel'); p.appendChild(scene(w,t).s); strip.appendChild(p); });
+  page.appendChild(strip);
+
+  page.appendChild(el('div','caption', ch.caption));
+  page.appendChild(el('details','tip', `<summary>📘 Ripasso veloce (clicca)</summary><div class="in">${ch.tip}</div>`));
+
+  const groups = [];   // {panel, fb, slots, tip}
+  const allSlots = st.slots;
+
+  if(ch.type === 'panels'){
+    if(ch.wordbank){
+      const words = ch.items.map(it => it[1].match(/\{\{(.*?)\}\}/)[1]);
+      const d = el('details','tip', `<summary>💡 Aiuto: banca di parole</summary><div class="in">${shuffle(words).join(' &nbsp;•&nbsp; ')}</div>`);
+      page.appendChild(d);
+    }
+    const grid = el('div','grid');
+    ch.items.forEach(([who, text, tip], i) => {
+      const slots = [];
+      const p = el('div','panel'); p.appendChild(el('div','num', i+1));
+      const {s, b} = scene(who, ''); b.appendChild(build(text, slots));
+      p.appendChild(s);
+      const fb = el('div','fb'); p.appendChild(fb);
+      grid.appendChild(p);
+      groups.push({panel:p, fb, slots, tip});
+      allSlots.push(...slots);
+    });
+    page.appendChild(grid);
+  }
+
+  if(ch.type === 'order'){
+    const grid = el('div','grid');
+    ch.items.forEach(([who, words, answers], i) => {
+      const p = el('div','panel'); p.appendChild(el('div','num', i+1));
+      const line = el('div','answer-line');
+      const pool = el('div','chips');
+      const {s, b} = scene(who, ''); b.appendChild(line); p.appendChild(s);
+      p.appendChild(pool);
+      const reset = el('button','mini','↺ Ricomincia'); reset.type='button'; p.appendChild(reset);
+      const fb = el('div','fb'); p.appendChild(fb);
+      const mkChip = w => { const c = el('button','chip', w); c.type='button'; c.dataset.w = w; return c; };
+      const refreshCaps = () => { [...line.children].forEach((c,j) => { const w = c.dataset.w; c.textContent = j===0 ? w[0].toUpperCase()+w.slice(1) : w; }); };
+      const fillPool = () => { pool.innerHTML=''; line.innerHTML=''; shuffle(words).forEach(w => pool.appendChild(mkChip(w))); line.classList.remove('ok','bad'); };
+      pool.onclick = e => { const c = e.target.closest('.chip'); if(!c) return; line.appendChild(c); refreshCaps(); line.classList.remove('ok','bad'); };
+      line.onclick = e => { const c = e.target.closest('.chip'); if(!c) return; c.textContent = c.dataset.w; pool.appendChild(c); refreshCaps(); line.classList.remove('ok','bad'); };
+      reset.onclick = fillPool;
+      fillPool();
+      const slot = {
+        check(){ const got = [...line.children].map(c=>c.dataset.w.toLowerCase()).join(' / '); return answers.includes(got); },
+        mark(r){ line.classList.remove('ok','bad'); line.classList.add(r?'ok':'bad'); },
+        reveal(){ pool.innerHTML=''; line.innerHTML=''; answers[0].split(' / ').forEach(lw => { const w = words.find(x=>x.toLowerCase()===lw); line.appendChild(mkChip(w)); }); refreshCaps(); this.mark(true); }
+      };
+      grid.appendChild(p);
+      groups.push({panel:p, fb, slots:[slot], tip:'Ricorda: nelle domande il verbo (is / are) va all\'inizio!'});
+      allSlots.push(slot);
+    });
+    page.appendChild(grid);
+  }
+
+  if(ch.type === 'write'){
+    const grid = el('div','grid');
+    const label = {'+':'✅ affermativa','-':'❌ negativa','?':'❓ domanda'};
+    ch.items.forEach((it, i) => {
+      const p = el('div','panel note'); p.appendChild(el('div','num', i+1));
+      p.appendChild(el('div','', `<span class="prompt">${it.p}</span><span class="badge">${label[it.k]}${it.ans ? ' + risposta: <b>'+it.ans+'</b>' : ''}</span>`));
+      const slots = [];
+      const q = el('input','wr'); q.type='text'; q.placeholder = it.k==='?' ? 'Scrivi la domanda…' : 'Scrivi la frase…'; q.spellcheck=false; q.autocomplete='off';
+      p.appendChild(q);
+      const mkSlot = (inp, accepted, isShort) => ({
+        check(){
+          const raw = clean(inp.value);
+          if(isShort && /^yes\W+\w+'(s|re|m)\b/i.test(raw)) return false;
+          const n = norm(raw);
+          if(accepted.some(a => norm(a) === n)) return true;
+          return false;
+        },
+        mark(r){ inp.classList.remove('ok','bad','case'); inp.classList.add(r===true?'ok':'bad'); },
+        reveal(){ inp.value = isShort ? accepted[0].replace(/^(\w+) /,'$1, ').replace(/ is not$/,' isn\'t').replace(/ are not$/,' aren\'t') + '.'
+                                    : accepted[0] + (it.k==='?' ? '?' : '.'); this.mark(true); }
+      });
+      slots.push(mkSlot(q, it.a, false));
+      let tip = it.k==='+' ? 'Usa la forma affermativa: soggetto + am / is / are.'
+              : it.k==='-' ? 'Usa la forma negativa: isn\'t / aren\'t (oppure is not / are not).'
+              : 'Domanda: Is / Are + soggetto…? Poi la risposta breve.';
+      if(it.s){
+        p.appendChild(el('div','lbl','Risposta breve:'));
+        const sa = el('input','wr'); sa.type='text'; sa.placeholder = it.ans + ', …'; sa.spellcheck=false; sa.autocomplete='off';
+        p.appendChild(sa);
+        slots.push(mkSlot(sa, it.s, true));
+        tip += ' Risposta breve: Yes, it is. / No, it isn\'t. (niente contrazione con Yes!)';
+      }
+      const fb = el('div','fb'); p.appendChild(fb);
+      grid.appendChild(p);
+      groups.push({panel:p, fb, slots, tip});
+      allSlots.push(...slots);
+    });
+    page.appendChild(grid);
+  }
+
+  if(ch.type === 'profile'){
+    const mkCard = cd => {
+      const card = el('div','card');
+      card.innerHTML = `<div class="head">${face(cd.who)} ${C[cd.who].name.toUpperCase()}</div><table>${cd.rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('')}</table>`;
+      return card;
+    };
+    // Parte A
+    page.appendChild(el('h2','','Parte A — Completa il paragrafo su Aiden'));
+    const pa = el('div','panel wide');
+    const wrap = el('div','profile-wrap');
+    wrap.appendChild(mkCard(ch.card));
+    const slots = [];
+    const {s, b} = scene('leo', ''); b.appendChild(build(ch.text, slots));
+    s.style.flex = '1 1 280px';
+    wrap.appendChild(s);
+    pa.appendChild(wrap);
+    const fb = el('div','fb'); pa.appendChild(fb);
+    page.appendChild(pa);
+    groups.push({panel:pa, fb, slots, tip:'Aiden è un ragazzo: He / His. Controlla la scheda per paese e nazionalità, e ricorda le maiuscole!'});
+    allSlots.push(...slots);
+
+    // Parte B (non valutata)
+    page.appendChild(el('h2','','Parte B — Tocca a te! Scrivi su Zoe'));
+    const pb = el('div','panel wide');
+    const wrapB = el('div','profile-wrap');
+    wrapB.appendChild(mkCard(ch.free));
+    const right = el('div'); right.style.flex = '1 1 280px';
+    right.appendChild(el('div','lbl','Scrivi un breve paragrafo su Zoe (5-7 frasi). Zoe è una ragazza: usa She / Her!'));
+    const ta = el('textarea'); ta.placeholder = 'Her name is…'; ta.spellcheck = false;
+    right.appendChild(ta);
+    const cl = el('div','checklist');
+    ch.free.checks.forEach(([lab]) => cl.appendChild(el('span','', '☐ '+lab)));
+    right.appendChild(el('div','lbl','Lista di controllo (si aggiorna mentre scrivi):'));
+    right.appendChild(cl);
+    ta.addEventListener('input', () => {
+      ch.free.checks.forEach(([lab,re],i) => { const ok = re.test(ta.value); const sp = cl.children[i]; sp.classList.toggle('yes',ok); sp.textContent = (ok?'☑ ':'☐ ')+lab; });
+    });
+    const mb = el('button','mini','👀 Confronta con il modello'); mb.type='button';
+    const model = el('div','model', '<b>Modello:</b> ' + ch.free.model);
+    mb.onclick = () => { model.style.display = model.style.display==='block' ? 'none' : 'block'; };
+    right.appendChild(mb); right.appendChild(model);
+    wrapB.appendChild(right);
+    pb.appendChild(wrapB);
+    page.appendChild(pb);
+  }
+
+  if(ch.type === 'letter'){
+    const p = el('div','letter');
+    const slots = [];
+    ch.text.forEach(par => { const pp = el('p'); pp.appendChild(build(par, slots)); p.appendChild(pp); });
+    const fb = el('div','fb');
+    const holder = el('div'); holder.appendChild(p); holder.appendChild(fb);
+    page.appendChild(holder);
+    groups.push({panel:null, fb, slots, tip:'Guarda le parole rosse. Ripassa it\'s / its, they\'re / their, his / is!'});
+    allSlots.push(...slots);
+  }
+
+  st.max = allSlots.length;
+
+  // barra comandi
+  const bar = el('div','bar');
+  const check = el('button','btn go','✔ Controlla'); check.type='button';
+  const sol = el('button','btn sol','👁 Mostra soluzioni'); sol.type='button'; sol.hidden = true;
+  const next = el('button','btn next', idx < CH.length-1 ? 'Pagina successiva ➜' : 'Vai al finale ★'); next.type='button';
+  bar.append(check, sol, next);
+  page.appendChild(bar);
+  const res = el('div','result'); page.appendChild(res);
+
+  check.onclick = () => {
+    let ok = 0;
+    groups.forEach(g => {
+      let gOk = true, hasCase = false;
+      g.slots.forEach(s => { const r = s.check(); s.mark(r); if(r===true) ok++; else { gOk = false; if(r==='case') hasCase = true; } });
+      if(g.panel){ g.panel.classList.remove('ok','bad'); g.panel.classList.add(gOk?'ok':'bad'); }
+      g.fb.className = 'fb' + (gOk ? ' good' : '');
+      g.fb.textContent = gOk ? (g.panel ? '✔ Corretto!' : '') : (hasCase ? '🔠 Quasi! Attenzione alle MAIUSCOLE. ' : '✖ ') + (g.tip || 'Riprova!');
+      if(gOk && !g.panel) g.fb.textContent = '✔ Tutto corretto!';
+    });
+    const first = !st.checked;
+    if(first){ st.checked = true; st.score = ok; }
+    sol.hidden = false;
+    const all = ok === st.max;
+    res.classList.add('show');
+    res.innerHTML = (first ? `Primo controllo: <b>${ok} / ${st.max}</b> ${starsFor(ok/st.max)}<br>` : `Punteggio registrato (primo controllo): <b>${st.score} / ${st.max}</b> — ora: ${ok} / ${st.max}<br>`)
+      + (all ? '🎉 Perfetto! Tutto giusto!' : 'Correggi le parti in <span style="color:#c92a2a">rosso</span> e premi di nuovo <b>Controlla</b>.');
+    if(all) pow(['WOW!','GREAT!','SUPER!','BOOM!','YES!'][Math.floor(Math.random()*5)]);
+    updateNav();
+  };
+  sol.onclick = () => {
+    if(!st.checked){ st.checked = true; st.score = 0; }
+    groups.forEach(g => { g.slots.forEach(s => s.reveal()); if(g.panel){ g.panel.classList.remove('bad'); g.panel.classList.add('ok'); } g.fb.className='fb good'; g.fb.textContent='Soluzione mostrata.'; });
+    res.classList.add('show');
+    res.innerHTML = `Punteggio registrato: <b>${st.score} / ${st.max}</b>. Leggi bene le soluzioni! 📖`;
+    updateNav();
+  };
+  next.onclick = () => go(idx+2);
+  return page;
+}
+
+function starsFor(r){ return r >= .9 ? '⭐⭐⭐' : r >= .7 ? '⭐⭐' : r >= .5 ? '⭐' : '💪'; }
+
+/* ============ START & FINALE ============ */
+function renderStart(){
+  const page = el('section','page start-box'); page.id = 'page-start';
+  const p = el('div','panel');
+  p.innerHTML = `<h2 style="font-size:36px;margin:4px 0">Welcome to Hilltop School!</h2>
+    <div class="cast">${Object.keys(C).filter(k=>k!=='zoe').map(face).join('')}</div>
+    <p style="font-weight:700">Leo è un ragazzo italiano appena arrivato in una scuola di Londra.<br>Aiutalo a completare il suo fumetto: 7 pagine, 7 missioni!</p>
+    <div class="mission">
+      <div><b>1.</b> Paesi e nazionalità</div><div><b>2.</b> Verbo TO BE</div>
+      <div><b>3.</b> Domande in ordine</div><div><b>4.</b> Frasi e short answers</div>
+      <div><b>5.</b> Aggettivi possessivi</div><div><b>6.</b> Scrivere un profilo</div>
+      <div><b>7.</b> Leggere una lettera</div><div><b>★</b> Il tuo punteggio finale</div>
+    </div>
+    <p><label for="nm"><b>Come ti chiami?</b></label><br><input id="nm" placeholder="Nome e cognome"></p>
+    <p style="font-size:15px">Per ogni pagina conta il <b>primo</b> “Controlla”: pensa bene prima di premerlo! Dopo puoi correggere gli errori.</p>`;
+  const b = el('button','btn go','Iniziamo! ➜'); b.type='button';
+  b.onclick = () => { STATE.name = $('#nm').value.trim(); go(1); };
+  p.appendChild(b);
+  page.appendChild(p);
+  return page;
+}
+
+function renderFinal(){
+  const page = el('section','page'); page.id = 'page-final';
+  page.appendChild(el('div','chapter-title bang','The End!'));
+  const box = el('div','panel'); box.id = 'final-box';
+  page.appendChild(box);
+  const bar = el('div','bar');
+  const pr = el('button','btn','🖨 Stampa il risultato'); pr.type='button'; pr.onclick = () => window.print();
+  const rs = el('button','btn sol','↺ Ricomincia tutto'); rs.type='button'; rs.onclick = () => { if(confirm('Vuoi davvero ricominciare da capo?')) location.reload(); };
+  bar.append(pr, rs); page.appendChild(bar);
+  return page;
+}
+function fillFinal(){
+  const box = $('#final-box');
+  let tot = 0, max = 0, done = 0;
+  const rows = CH.map((c,i) => {
+    const st = STATE.ch[c.id]; max += st.max;
+    if(st.checked){ tot += st.score; done++; }
+    const pct = st.checked ? Math.round(st.score/st.max*100) : 0;
+    return `<div class="score-row"><span class="lab">${i+1}. ${c.skill}</span><span class="track"><span class="fill-bar" style="display:block;width:${pct}%"></span></span><span class="val">${st.checked ? st.score+'/'+st.max : '—'}</span></div>`;
+  }).join('');
+  const r = max ? tot/max : 0;
+  const msg = r >= .9 ? 'Fantastic! You\'re an English superstar!' : r >= .7 ? 'Great job! Very good!' : r >= .5 ? 'Good! Keep practising!' : 'Don\'t give up! Try again!';
+  const name = STATE.name ? STATE.name : 'Student';
+  box.innerHTML = `
+    <div class="strip" style="margin-bottom:6px">
+      <div class="panel">${scene('leo', `Thank you, <b>${escapeHTML(name)}</b>! My comic is finished!`).s.outerHTML}</div>
+      <div class="panel">${scene('parker', msg).s.outerHTML}</div>
+    </div>
+    <div class="big-stars">${starsFor(r)}</div>
+    <h2 style="text-align:center;margin:4px 0 14px;font-size:34px">${tot} / ${max} punti (${Math.round(r*100)}%)</h2>
+    ${done < CH.length ? `<p style="text-align:center;font-weight:700;color:#c92a2a">Hai controllato ${done} pagine su ${CH.length}. Completa le altre per il punteggio pieno!</p>` : ''}
+    ${rows}
+    <p style="font-size:14px;color:#555;margin-top:12px">${escapeHTML(name)} — ${new Date().toLocaleDateString('it-IT')}</p>`;
+}
+function escapeHTML(s){ return s.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+/* ============ NAVIGAZIONE ============ */
+const PAGES = [];
+function updateNav(){
+  const nav = $('#nav'); nav.innerHTML = '';
+  const labels = ['Start', ...CH.map((_,i)=>String(i+1)), '★'];
+  labels.forEach((l,i) => {
+    const b = el('button', i===current ? 'active' : '', l); b.type='button';
+    if(i>=1 && i<=CH.length){ const st = STATE.ch[CH[i-1].id]; if(st.checked) b.innerHTML += `<span class="st">${starsFor(st.score/st.max)}</span>`; }
+    b.onclick = () => go(i);
+    nav.appendChild(b);
+  });
+}
+let current = 0;
+function go(i){
+  current = i;
+  PAGES.forEach((p,j) => p.classList.toggle('active', j===i));
+  if(i === PAGES.length-1) fillFinal();
+  updateNav();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+const main = $('#pages');
+PAGES.push(renderStart());
+CH.forEach((c,i) => PAGES.push(renderChapter(c,i)));
+PAGES.push(renderFinal());
+PAGES.forEach(p => main.appendChild(p));
+go(0);
+</script>
+</body>
+</html>
